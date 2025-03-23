@@ -47,7 +47,7 @@ const init = async () => {
 
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
-        Key: `__outputs/${PROJECT_ID}/${filePath}`,
+        Key: `__outputs/${PROJECT_ID}/${file}`,
         Body: fs.createReadStream(filePath),
         ContentType: mime.lookup(filePath),
       });
