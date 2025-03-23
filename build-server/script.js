@@ -20,6 +20,7 @@ const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
 const init = async () => {
   console.log("Executing script.js");
+  const __dirname = path.dirname(new URL(import.meta.url).pathname);
   const outDirPath = path.join(__dirname, "output");
 
   const p = exec(`cd ${outDirPath} && npm install && npm run build`);

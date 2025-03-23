@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export GIT_REPOSITORY_URL = "$GIT_REPOSITORY_URL"
+set -e # Exit on error
 
 git clone "$GIT_REPOSITORY_URL" /home/app/output
 
