@@ -22,7 +22,7 @@ const init = async () => {
   console.log("Executing script.js");
   const outDirPath = path.join(__dirname, "output");
 
-  const p = exec(`cd ${outDirPath} && npm install && npm run build`);
+  const p = exec(`cd ${outDirPath}; npm install; npm run build`);
 
   p.stdout.on("data", (data) => {
     console.log(data.toString());
@@ -35,7 +35,7 @@ const init = async () => {
   p.on("close", async () => {
     console.log("Build complete");
 
-    const distFolderPath = path.join(outDirPath, "output", "dist");
+    const distFolderPath = path.join(outDirPath, "dist");
     const distFolderContents = fs.readdirSync(distFolderPath, {
       recursive: true,
     });
