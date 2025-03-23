@@ -1,9 +1,9 @@
-import { exec } from "child_process";
-import path from "path";
-import fs from "fs";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import mime from "mime-types";
-import { config } from "dotenv";
+const { exec } = require("child_process");
+const path = require("path");
+const fs = require("fs");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const mime = require("mime-types");
+const { config } = require("dotenv");
 
 config();
 
@@ -20,7 +20,6 @@ const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
 const init = async () => {
   console.log("Executing script.js");
-  const __dirname = path.dirname(new URL(import.meta.url).pathname);
   const outDirPath = path.join(__dirname, "output");
 
   const p = exec(`cd ${outDirPath} && npm install && npm run build`);
@@ -40,7 +39,8 @@ const init = async () => {
     const distFolderContents = fs.readdirSync(distFolderPath, {
       recursive: true,
     });
-    for (const filePath of distFolderContents) {
+    for (const file of distFolderContents) {
+      const filePath = path.join(distFolderPath, file);
       if (fs.lstatSync(filePath).isDirectory()) continue;
 
       console.log(`Uploading ${filePath}`);
