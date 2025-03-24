@@ -8,6 +8,7 @@ require("dotenv").config();
 
 const app = express();
 const PORT = 9000;
+const SOCKET_PORT = 9001;
 
 const ecsClient = new ECSClient({
   region: process.env.AWS_REGION,
@@ -21,7 +22,7 @@ const subscriber = new Redis(process.env.REDIS_URL);
 
 const io = new Server({ cors: "*" });
 
-io.listen(9002, () => console.log("Socket Server 9002"));
+io.listen(SOCKET_PORT, () => console.log(`Socket Server ${SOCKET_PORT}`));
 
 io.on("connection", (socket) => {
   socket.on("subscribe", (channel) => {
