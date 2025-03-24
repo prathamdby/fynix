@@ -1,6 +1,8 @@
 const express = require("express");
 const { generateSlug } = require("random-word-slugs");
 const { ECSClient, RunTaskCommand } = require("@aws-sdk/client-ecs");
+const { Server } = require("socket.io");
+const Redis = require("ioredis");
 
 require("dotenv").config();
 
@@ -15,6 +17,19 @@ const ecsClient = new ECSClient({
   },
 });
 
+const subscriber = new Redis(process.env.REDIS_URL);
+
+const io = new Server({ cors: "*" });
+
+io.listen(9002, () => console.log("Socket Server 9002"));
+
+io.on("connection", (socket) => {
+  socket.on("subscribe", (channel) => {
+    socket.join(channel);
+    socket.emit("message", `Joined ${channel}`);
+  });
+});
+
 const config = {
   CLUSTER: process.env.ECS_CLUSTER_ARN,
   TASK: process.env.ECS_TASK_DEFINITION_ARN,
@@ -23,15 +38,9 @@ const config = {
 app.use(express.json());
 
 app.post("/project", async (req, res) => {
-  const { gitURL } = req.body;
+  const { gitURL, slug } = req.body;
 
-  if (!gitURL) {
-    return res.status(400).json({
-      error: "Git URL is required",
-    });
-  }
-
-  const projectSlug = generateSlug();
+  const projectSlug = slug ?? generateSlug();
 
   // Spin up the container
 
@@ -76,6 +85,10 @@ app.post("/project", async (req, res) => {
               name: "AWS_BUCKET_NAME",
               value: process.env.AWS_BUCKET_NAME,
             },
+            {
+              name: "REDIS_URL",
+              value: process.env.REDIS_URL,
+            },
           ],
         },
       ],
@@ -92,5 +105,15 @@ app.post("/project", async (req, res) => {
     },
   });
 });
+
+async function initRedisSubscribe() {
+  console.log("Subscribing to logs...");
+  subscriber.psubscribe("logs:*");
+  subscriber.on("pmessage", (pattern, channel, message) => {
+    io.to(channel).emit("message", message);
+  });
+}
+
+initRedisSubscribe();
 
 app.listen(PORT, () => console.log(`API Server Running...${PORT}`));
